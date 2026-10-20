@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#10152d" />
+  <title>Simon diu! — Repte de memòria</title>
+  <style>
+    :root {
+      --bg-1: #091126;
+      --bg-2: #30136a;
+      --panel: rgba(14, 20, 48, 0.82);
+      --panel-border: rgba(255, 255, 255, 0.16);
+      --text: #f8f8ff;
+      --muted: #c8c9e8;
+      --accent: #ffd54a;
+      --danger: #ff5577;
+      --success: #56f09f;
+      --blue: #32a8ff;
+      --green: #41df78;
+      --red: #ff4b5f;
+      --yellow: #ffd83d;
+      --shadow: 0 24px 70px rgba(0, 0, 0, 0.38);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { min-height: 100%; }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      color: var(--text);
+      font-family: Inter, ui-rounded, "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background:
+        radial-gradient(circle at 15% 10%, rgba(50, 168, 255, 0.28), transparent 26rem),
+        radial-gradient(circle at 88% 18%, rgba(255, 75, 95, 0.25), transparent 24rem),
+        radial-gradient(circle at 70% 90%, rgba(65, 223, 120, 0.18), transparent 24rem),
+        linear-gradient(145deg, var(--bg-1), var(--bg-2));
+      overflow-x: hidden;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      z-index: -1;
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      filter: blur(14px);
+      opacity: 0.25;
+      animation: float 9s ease-in-out infinite;
+    }
+
+    body::before {
+      top: 14%;
+      left: -90px;
+      background: var(--yellow);
+    }
+
+    body::after {
+      right: -90px;
+      bottom: 8%;
+      background: var(--blue);
+      animation-delay: -4s;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-22px) scale(1.05); }
+    }
+
+    button, input, select { font: inherit; }
+
+    button {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .app {
+      width: min(1180px, 100%);
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: clamp(18px, 4vw, 44px);
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    .hero {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-mark {
+      width: 58px;
+      height: 58px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px;
+      padding: 8px;
+      border-radius: 18px;
+      background: #171c39;
+      box-shadow: 0 10px 0 #080b1c, 0 18px 30px rgba(0,0,0,.35);
+      transform: rotate(-5deg);
+    }
+
+    .brand-mark span { border-radius: 8px; }
+    .brand-mark span:nth-child(1) { background: var(--red); }
+    .brand-mark span:nth-child(2) { background: var(--blue); }
+    .brand-mark span:nth-child(3) { background: var(--green); }
+    .brand-mark span:nth-child(4) { background: var(--yellow); }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 6vw, 4.2rem);
+      line-height: 0.95;
+      letter-spacing: -0.06em;
+      text-shadow: 0 5px 0 rgba(0,0,0,.22);
+    }
+
+    .tagline {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-weight: 700;
+      font-size: clamp(0.95rem, 2vw, 1.15rem);
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 999px;
+      color: #fff;
+      background: rgba(255,255,255,.09);
+      backdrop-filter: blur(10px);
+      font-weight: 800;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.12);
+    }
+
+    .panel {
+      border: 1px solid var(--panel-border);
+      border-radius: 28px;
+      background: var(--panel);
+      backdrop-filter: blur(18px);
+      box-shadow: var(--shadow);
+    }
+
+    .setup {
+      width: min(760px, 100%);
+      margin: auto;
+      padding: clamp(22px, 5vw, 38px);
+    }
+
+    .setup h2, .game h2 { margin: 0 0 8px; font-size: clamp(1.5rem, 4vw, 2.2rem); }
+    .setup-intro { margin: 0 0 24px; color: var(--muted); line-height: 1.6; }
+
+    .players-form {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .player-row {
+      display: grid;
+      grid-template-columns: 44px 1fr 44px;
+      gap: 10px;
+      align-items: center;
+      animation: appear .25s ease-out;
+    }
+
+    @keyframes appear {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .player-number {
+      height: 44px;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      background: linear-gradient(145deg, #845cff, #5632d4);
+      box-shadow: 0 5px 0 #341b91;
+      font-weight: 900;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      min-height: 48px;
+      padding: 0 15px;
+      border: 2px solid transparent;
+      border-radius: 14px;
+      outline: none;
+      color: #16182e;
+      background: rgba(255,255,255,.96);
+      font-weight: 800;
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(255, 213, 74, .22);
+    }
+
+    .icon-btn,
+    .secondary-btn,
+    .primary-btn {
+      border: 0;
+      cursor: pointer;
+      font-weight: 900;
+      transition: transform .12s ease, filter .12s ease, box-shadow .12s ease;
+    }
+
+    .icon-btn:active,
+    .secondary-btn:active,
+    .primary-btn:active { transform: translateY(3px); }
+
+    .icon-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      color: #fff;
+      background: #f04468;
+      box-shadow: 0 5px 0 #a11f3b;
+      font-size: 1.25rem;
+    }
+
+    .icon-btn:disabled { opacity: .35; cursor: not-allowed; box-shadow: none; }
+
+    .setup-actions,
+    .game-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .primary-btn,
+    .secondary-btn {
+      min-height: 50px;
+      padding: 0 20px;
+      border-radius: 15px;
+    }
+
+    .primary-btn {
+      color: #2a2100;
+      background: linear-gradient(180deg, #ffe477, #ffc928);
+      box-shadow: 0 7px 0 #bb7b00, 0 12px 22px rgba(0,0,0,.22);
+    }
+
+    .primary-btn:hover { filter: brightness(1.06); }
+
+    .secondary-btn {
+      color: #fff;
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.16);
+      box-shadow: 0 6px 0 rgba(0,0,0,.2);
+    }
+
+    .secondary-btn:hover { background: rgba(255,255,255,.18); }
+
+    .rules {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .rule {
+      padding: 14px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.07);
+      color: var(--muted);
+      line-height: 1.45;
+      font-size: .92rem;
+    }
+
+    .rule strong { display: block; color: #fff; margin-bottom: 3px; }
+
+    .game {
+      display: none;
+      grid-template-columns: minmax(250px, 340px) minmax(0, 1fr);
+      gap: clamp(18px, 4vw, 36px);
+      align-items: start;
+    }
+
+    .game.visible { display: grid; }
+
+    .sidebar {
+      display: grid;
+      gap: 16px;
+      position: sticky;
+      top: 18px;
+    }
+
+    .status-card { padding: 22px; }
+
+    .status-label {
+      margin: 0 0 5px;
+      color: var(--accent);
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      font-size: .75rem;
+    }
+
+    .turn-name {
+      margin: 0;
+      font-size: clamp(1.7rem, 4vw, 2.6rem);
+      overflow-wrap: anywhere;
+    }
+
+    .status-message {
+      min-height: 48px;
+      margin: 13px 0 0;
+      color: var(--muted);
+      line-height: 1.45;
+      font-weight: 700;
+    }
+
+    .level-meter {
+      margin-top: 17px;
+    }
+
+    .level-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+      font-weight: 900;
+    }
+
+    .meter {
+      height: 12px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(255,255,255,.10);
+      box-shadow: inset 0 2px 5px rgba(0,0,0,.35);
+    }
+
+    .meter > span {
+      display: block;
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #47e58a, #f5e84f, #ff8d42);
+      transition: width .35s ease;
+    }
+
+    .scoreboard { padding: 16px; }
+    .scoreboard h3 { margin: 0 0 12px; font-size: 1rem; color: var(--muted); }
+
+    .player-card {
+      display: grid;
+      grid-template-columns: 34px 1fr auto;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 11px;
+      border-radius: 15px;
+      margin-top: 8px;
+      border: 1px solid transparent;
+      background: rgba(255,255,255,.055);
+      transition: transform .2s, border-color .2s, background .2s;
+    }
+
+    .player-card.active {
+      transform: translateX(4px);
+      border-color: var(--accent);
+      background: rgba(255, 213, 74, .11);
+    }
+
+    .player-card.eliminated { opacity: .45; filter: grayscale(.8); }
+    .player-card.winner { border-color: var(--success); background: rgba(86,240,159,.12); }
+
+    .avatar {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 11px;
+      color: #15182c;
+      background: #fff;
+      font-weight: 950;
+    }
+
+    .player-info { min-width: 0; }
+    .player-info strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .player-info small { color: var(--muted); }
+    .player-state { font-size: .8rem; font-weight: 900; }
+
+    .board-zone {
+      min-height: 650px;
+      display: grid;
+      place-items: center;
+      padding: clamp(18px, 3vw, 30px);
+      perspective: 1000px;
+    }
+
+    .board-stage {
+      width: min(620px, 100%);
+      display: grid;
+      place-items: center;
+      gap: 34px;
+    }
+
+    .board-shell {
+      position: relative;
+      width: min(78vw, 520px);
+      aspect-ratio: 1;
+      padding: clamp(16px, 3.6vw, 25px);
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 50% 37%, #3e466f 0 4%, transparent 5%),
+        linear-gradient(155deg, #333b62, #11152e 58%, #080b1b);
+      box-shadow:
+        0 18px 0 #070919,
+        0 26px 0 #04050e,
+        0 46px 65px rgba(0,0,0,.55),
+        inset 0 4px 4px rgba(255,255,255,.22),
+        inset 0 -12px 20px rgba(0,0,0,.45);
+      transform: rotateX(10deg) rotateZ(-1deg);
+      transform-style: preserve-3d;
+      transition: transform .25s ease;
+    }
+
+    .board-shell:hover { transform: rotateX(7deg) rotateZ(0deg) translateY(-3px); }
+
+    .board-shell::after {
+      content: "";
+      position: absolute;
+      inset: 12px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,.1);
+      pointer-events: none;
+      box-shadow: inset 0 0 22px rgba(255,255,255,.06);
+    }
+
+    .pads {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: clamp(10px, 2.5vw, 18px);
+      border-radius: 50%;
+      overflow: hidden;
+      transform: translateZ(8px);
+    }
+
+    .pad {
+      position: relative;
+      border: 0;
+      cursor: pointer;
+      outline: none;
+      box-shadow:
+        inset 0 5px 0 rgba(255,255,255,.28),
+        inset 0 -14px 20px rgba(0,0,0,.28),
+        0 7px 0 rgba(0,0,0,.55);
+      transition: transform .11s ease, filter .11s ease, box-shadow .11s ease;
+    }
+
+    .pad::before {
+      content: "";
+      position: absolute;
+      inset: 9%;
+      border-radius: inherit;
+      background: radial-gradient(circle at 35% 25%, rgba(255,255,255,.42), transparent 34%);
+      opacity: .45;
+      pointer-events: none;
+    }
+
+    .pad:focus-visible {
+      z-index: 2;
+      box-shadow: 0 0 0 6px #fff, 0 0 0 10px var(--accent);
+    }
+
+    .pad:disabled { cursor: default; }
+
+    .pad-red {
+      background: linear-gradient(145deg, #ff7280, var(--red) 48%, #b91835);
+      border-radius: 100% 18% 18% 18%;
+      transform-origin: bottom right;
+    }
+
+    .pad-blue {
+      background: linear-gradient(215deg, #75c8ff, var(--blue) 48%, #0872bd);
+      border-radius: 18% 100% 18% 18%;
+      transform-origin: bottom left;
+    }
+
+    .pad-green {
+      background: linear-gradient(35deg, #7bf2a2, var(--green) 48%, #159346);
+      border-radius: 18% 18% 18% 100%;
+      transform-origin: top right;
+    }
+
+    .pad-yellow {
+      background: linear-gradient(-35deg, #fff083, var(--yellow) 48%, #c99d00);
+      border-radius: 18% 18% 100% 18%;
+      transform-origin: top left;
+    }
+
+    .pad.active,
+    .pad:active:not(:disabled) {
+      transform: scale(.94) translateZ(-2px);
+      filter: brightness(1.55) saturate(1.15);
+      box-shadow:
+        inset 0 0 35px rgba(255,255,255,.78),
+        0 2px 0 rgba(0,0,0,.6),
+        0 0 30px currentColor;
+    }
+
+    .hub {
+      position: absolute;
+      z-index: 5;
+      inset: 50% auto auto 50%;
+      width: 37%;
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      padding: 14px;
+      border-radius: 50%;
+      transform: translate(-50%, -50%) translateZ(32px);
+      text-align: center;
+      background:
+        radial-gradient(circle at 38% 30%, rgba(255,255,255,.16), transparent 28%),
+        linear-gradient(145deg, #2f3658, #11152d 68%);
+      border: clamp(7px, 1.5vw, 12px) solid #0a0d20;
+      box-shadow:
+        0 12px 0 #050712,
+        0 20px 28px rgba(0,0,0,.55),
+        inset 0 2px 2px rgba(255,255,255,.2);
+      pointer-events: none;
+    }
+
+    .hub-content { transform: translateY(-2px); }
+
+    .hub-title {
+      display: block;
+      font-size: clamp(1rem, 3.8vw, 1.75rem);
+      font-weight: 950;
+      line-height: 1;
+      letter-spacing: -.05em;
+    }
+
+    .hub-display {
+      display: inline-grid;
+      min-width: 64px;
+      margin-top: 8px;
+      padding: 6px 10px;
+      border-radius: 9px;
+      color: #ff6f83;
+      background: #050713;
+      box-shadow: inset 0 2px 5px #000, 0 1px 0 rgba(255,255,255,.1);
+      font-family: "Courier New", monospace;
+      font-size: clamp(1rem, 4vw, 1.65rem);
+      font-weight: 950;
+      letter-spacing: .1em;
+      text-shadow: 0 0 10px rgba(255, 75, 95, .75);
+    }
+
+    .turn-gate {
+      width: min(580px, 100%);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 14px;
+      align-items: center;
+      padding: 16px 18px;
+      border-radius: 20px;
+      background: rgba(255,255,255,.09);
+      border: 1px solid rgba(255,255,255,.15);
+    }
+
+    .turn-gate strong { display: block; font-size: 1.1rem; }
+    .turn-gate span { color: var(--muted); font-size: .9rem; }
+
+    .keyboard-help {
+      color: var(--muted);
+      text-align: center;
+      font-size: .84rem;
+      line-height: 1.5;
+    }
+
+    .toast {
+      position: fixed;
+      z-index: 20;
+      left: 50%;
+      bottom: 24px;
+      width: min(92vw, 520px);
+      padding: 15px 18px;
+      border-radius: 16px;
+      transform: translate(-50%, 130px);
+      opacity: 0;
+      color: #13162b;
+      background: #fff;
+      box-shadow: 0 18px 45px rgba(0,0,0,.38);
+      font-weight: 900;
+      text-align: center;
+      transition: transform .3s ease, opacity .3s ease;
+      pointer-events: none;
+    }
+
+    .toast.show { transform: translate(-50%, 0); opacity: 1; }
+    .toast.success { background: #a9ffd0; }
+    .toast.error { background: #ffb2c0; }
+    .toast.info { background: #c8eaff; }
+
+    .confetti {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .confetti-piece {
+      position: absolute;
+      top: -22px;
+      width: 11px;
+      height: 18px;
+      border-radius: 3px;
+      animation: fall 2.8s linear forwards;
+    }
+
+    @keyframes fall {
+      to { transform: translate3d(var(--drift), 110vh, 0) rotate(900deg); }
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @media (max-width: 850px) {
+      .game { grid-template-columns: 1fr; }
+      .sidebar { position: static; grid-template-columns: 1fr 1fr; }
+      .status-card { grid-column: 1 / -1; }
+      .board-zone { min-height: auto; padding-inline: 0; }
+    }
+
+    @media (max-width: 580px) {
+      .app { padding: 15px; }
+      .hero { align-items: flex-start; }
+      .pill { width: 100%; justify-content: center; }
+      .rules { grid-template-columns: 1fr; }
+      .sidebar { grid-template-columns: 1fr; }
+      .status-card { grid-column: auto; }
+      .turn-gate { grid-template-columns: 1fr; text-align: center; }
+      .turn-gate .primary-btn { width: 100%; }
+      .board-shell { width: min(90vw, 450px); }
+      .hub { width: 39%; }
+      .game-actions > button { flex: 1; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="hero">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+        <div>
+          <h1>Simon diu!</h1>
+          <p class="tagline">Mira, escolta, memoritza i supera els 15 nivells.</p>
+        </div>
+      </div>
+      <div class="pill" aria-label="Característiques del joc">🧠 1–6 rivals · 🔊 4 sons · 🏆 15 nivells</div>
+    </header>
+
+    <section id="setupScreen" class="setup panel" aria-labelledby="setupTitle">
+      <h2 id="setupTitle">Qui jugarà?</h2>
+      <p class="setup-intro">Escriviu els noms. Cada jugador tindrà la seva pròpia seqüència, el seu nivell i un torn diferent. Una errada elimina el jugador.</p>
+
+      <div id="playersForm" class="players-form"></div>
+
+      <div class="setup-actions">
+        <button id="addPlayerBtn" class="secondary-btn" type="button">＋ Afegir jugador</button>
+        <button id="startGameBtn" class="primary-btn" type="button">Començar la partida ▶</button>
+      </div>
+
+      <div class="rules" aria-label="Regles resumides">
+        <div class="rule"><strong>1. Observa</strong>La plataforma il·lumina i fa sonar una seqüència.</div>
+        <div class="rule"><strong>2. Repeteix</strong>Prem els colors en el mateix ordre.</div>
+        <div class="rule"><strong>3. Guanya</strong>Arriba al nivell 15 abans que els rivals.</div>
+      </div>
+    </section>
+
+    <section id="gameScreen" class="game" aria-label="Partida de Simon diu">
+      <aside class="sidebar">
+        <section class="status-card panel" aria-live="polite">
+          <p class="status-label">Torn actual</p>
+          <h2 id="turnName" class="turn-name">Jugador</h2>
+          <p id="statusMessage" class="status-message">Prem «Començar torn» quan estiguis preparat.</p>
+
+          <div class="level-meter">
+            <div class="level-line"><span>Nivell</span><span id="levelText">1 / 15</span></div>
+            <div class="meter"><span id="levelBar"></span></div>
+          </div>
+        </section>
+
+        <section class="scoreboard panel">
+          <h3>Classificació</h3>
+          <div id="scoreboard"></div>
+        </section>
+
+        <div class="game-actions">
+          <button id="muteBtn" class="secondary-btn" type="button" aria-pressed="false">🔊 So activat</button>
+          <button id="restartBtn" class="secondary-btn" type="button">↻ Reiniciar</button>
+        </div>
+      </aside>
+
+      <section class="board-zone panel">
+        <div class="board-stage">
+          <div class="board-shell" aria-label="Tauler Simon de quatre colors">
+            <div class="pads">
+              <button class="pad pad-red" data-pad="0" type="button" aria-label="Color vermell" disabled></button>
+              <button class="pad pad-blue" data-pad="1" type="button" aria-label="Color blau" disabled></button>
+              <button class="pad pad-green" data-pad="2" type="button" aria-label="Color verd" disabled></button>
+              <button class="pad pad-yellow" data-pad="3" type="button" aria-label="Color groc" disabled></button>
+            </div>
+            <div class="hub" aria-hidden="true">
+              <div class="hub-content">
+                <span class="hub-title">SIMON<br>DIU!</span>
+                <span id="hubDisplay" class="hub-display">--</span>
+              </div>
+            </div>
+          </div>
+
+          <div id="turnGate" class="turn-gate">
+            <div>
+              <strong id="gateTitle">Preparat?</strong>
+              <span id="gateSubtitle">Els altres jugadors no poden tocar el tauler.</span>
+            </div>
+            <button id="beginTurnBtn" class="primary-btn" type="button">Començar torn</button>
+          </div>
+
+          <div class="keyboard-help">També pots jugar amb el teclat: <strong>1</strong> vermell · <strong>2</strong> blau · <strong>3</strong> verd · <strong>4</strong> groc</div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="assertive"></div>
+  <div id="confetti" class="confetti" aria-hidden="true"></div>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const MAX_LEVEL = 15;
+      const MAX_PLAYERS = 6;
+      const PAD_NAMES = ["vermell", "blau", "verd", "groc"];
+      const PAD_FREQUENCIES = [261.63, 329.63, 392.00, 523.25];
+      const CONFETTI_COLORS = ["#ff4b5f", "#32a8ff", "#41df78", "#ffd83d", "#ffffff", "#a477ff"];
+
+      const setupScreen = document.getElementById("setupScreen");
+      const gameScreen = document.getElementById("gameScreen");
+      const playersForm = document.getElementById("playersForm");
+      const addPlayerBtn = document.getElementById("addPlayerBtn");
+      const startGameBtn = document.getElementById("startGameBtn");
+      const beginTurnBtn = document.getElementById("beginTurnBtn");
+      const restartBtn = document.getElementById("restartBtn");
+      const muteBtn = document.getElementById("muteBtn");
+      const turnName = document.getElementById("turnName");
+      const statusMessage = document.getElementById("statusMessage");
+      const levelText = document.getElementById("levelText");
+      const levelBar = document.getElementById("levelBar");
+      const scoreboard = document.getElementById("scoreboard");
+      const hubDisplay = document.getElementById("hubDisplay");
+      const gateTitle = document.getElementById("gateTitle");
+      const gateSubtitle = document.getElementById("gateSubtitle");
+      const turnGate = document.getElementById("turnGate");
+      const toast = document.getElementById("toast");
+      const confetti = document.getElementById("confetti");
+      const pads = [...document.querySelectorAll(".pad")];
+
+      let players = [];
+      let currentPlayerIndex = 0;
+      let acceptingInput = false;
+      let playingSequence = false;
+      let inputPosition = 0;
+      let gameEnded = false;
+      let muted = false;
+      let audioContext = null;
+      let toastTimer = null;
+      let turnToken = 0;
+
+      function addPlayerField(defaultName = "") {
+        if (playersForm.children.length >= MAX_PLAYERS) return;
+
+        const row = document.createElement("div");
+        row.className = "player-row";
+        row.innerHTML = `
+          <span class="player-number" aria-hidden="true"></span>
+          <label class="sr-only">Nom del jugador</label>
+          <input type="text" maxlength="18" autocomplete="off" placeholder="Nom del jugador" value="${escapeHtml(defaultName)}">
+          <button class="icon-btn remove-player" type="button" aria-label="Eliminar jugador">×</button>
+        `;
+        playersForm.appendChild(row);
+        row.querySelector("input").focus();
+        renumberPlayerFields();
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      function renumberPlayerFields() {
+        const rows = [...playersForm.children];
+        rows.forEach((row, index) => {
+          row.querySelector(".player-number").textContent = index + 1;
+          const label = row.querySelector("label");
+          const input = row.querySelector("input");
+          const id = `playerName${index + 1}`;
+          input.id = id;
+          label.htmlFor = id;
+          label.textContent = `Nom del jugador ${index + 1}`;
+          row.querySelector(".remove-player").disabled = rows.length === 1;
+        });
+        addPlayerBtn.disabled = rows.length >= MAX_PLAYERS;
+      }
+
+      function getEnteredNames() {
+        return [...playersForm.querySelectorAll("input")]
+          .map((input, index) => input.value.trim() || `Jugador ${index + 1}`);
+      }
+
+      function startGame() {
+        const names = getEnteredNames();
+        const normalized = names.map(name => name.toLocaleLowerCase("ca"));
+        const duplicate = normalized.find((name, index) => normalized.indexOf(name) !== index);
+        if (duplicate) {
+          showToast("Cada rival ha de tenir un nom diferent.", "error");
+          return;
+        }
+
+        players = names.map((name, index) => ({
+          id: `${Date.now()}-${index}`,
+          name,
+          level: 1,
+          sequence: [],
+          alive: true,
+          completed: false,
+          correctPads: 0
+        }));
+
+        currentPlayerIndex = 0;
+        gameEnded = false;
+        turnToken++;
+        setupScreen.style.display = "none";
+        gameScreen.classList.add("visible");
+        prepareCurrentTurn(true);
+      }
+
+      function currentPlayer() {
+        return players[currentPlayerIndex];
+      }
+
+      function prepareCurrentTurn(firstTurn = false) {
+        if (gameEnded) return;
+        acceptingInput = false;
+        playingSequence = false;
+        inputPosition = 0;
+        setPadsEnabled(false);
+
+        const player = currentPlayer();
+        if (!player || !player.alive || player.completed) {
+          moveToNextPlayer();
+          return;
+        }
+
+        turnName.textContent = player.name;
+        statusMessage.textContent = firstTurn
+          ? "Prem «Començar torn» quan estiguis preparat."
+          : "És el teu torn. Observa i escolta amb atenció.";
+        gateTitle.textContent = `Torn de ${player.name}`;
+        gateSubtitle.textContent = players.length > 1
+          ? "Només aquest jugador pot tocar el tauler."
+          : "Prem el botó quan estiguis preparat.";
+        beginTurnBtn.textContent = "Començar torn";
+        beginTurnBtn.disabled = false;
+        turnGate.style.display = "grid";
+        hubDisplay.textContent = String(player.level).padStart(2, "0");
+        updateInterface();
+      }
+
+      async function beginTurn() {
+        if (gameEnded || playingSequence || acceptingInput) return;
+        ensureAudioContext();
+
+        const player = currentPlayer();
+        if (!player || !player.alive) return;
+
+        beginTurnBtn.disabled = true;
+        turnGate.style.display = "none";
+        player.sequence.push(randomPad());
+        inputPosition = 0;
+        statusMessage.textContent = "Mira la seqüència...";
+        hubDisplay.textContent = "··";
+        updateInterface();
+
+        const localToken = ++turnToken;
+        await playSequence(player.sequence, player.level, localToken);
+        if (localToken !== turnToken || gameEnded) return;
+
+        acceptingInput = true;
+        setPadsEnabled(true);
+        statusMessage.textContent = "Ara repeteix la seqüència!";
+        hubDisplay.textContent = `0${player.sequence.length}`.slice(-2);
+      }
+
+      function randomPad() {
+        return Math.floor(Math.random() * pads.length);
+      }
+
+      function timingForLevel(level) {
+        const onTime = Math.max(250, 590 - (level - 1) * 23);
+        const gapTime = Math.max(95, 250 - (level - 1) * 10);
+        return { onTime, gapTime };
+      }
+
+      async function playSequence(sequence, level, localToken) {
+        playingSequence = true;
+        setPadsEnabled(false);
+        const { onTime, gapTime } = timingForLevel(level);
+        await sleep(420);
+
+        for (let index = 0; index < sequence.length; index++) {
+          if (localToken !== turnToken || gameEnded) return;
+          hubDisplay.textContent = `${index + 1}/${sequence.length}`;
+          await flashPad(sequence[index], onTime);
+          await sleep(gapTime);
+        }
+        playingSequence = false;
+      }
+
+      async function flashPad(index, duration = 330) {
+        const pad = pads[index];
+        pad.classList.add("active");
+        playTone(index, duration / 1000);
+        if (navigator.vibrate) navigator.vibrate(30);
+        await sleep(duration);
+        pad.classList.remove("active");
+      }
+
+      function handlePad(index) {
+        if (!acceptingInput || playingSequence || gameEnded) return;
+
+        const player = currentPlayer();
+        flashPad(index, 170);
+
+        if (index !== player.sequence[inputPosition]) {
+          handleMistake(player);
+          return;
+        }
+
+        inputPosition++;
+        player.correctPads++;
+        hubDisplay.textContent = `${inputPosition}/${player.sequence.length}`;
+
+        if (inputPosition === player.sequence.length) {
+          handleLevelCompleted(player);
+        }
+      }
+
+      function handleLevelCompleted(player) {
+        acceptingInput = false;
+        setPadsEnabled(false);
+
+        if (player.level >= MAX_LEVEL) {
+          player.completed = true;
+          gameEnded = true;
+          statusMessage.textContent = `Fantàstic! ${player.name} ha superat els 15 nivells.`;
+          hubDisplay.textContent = "🏆";
+          updateInterface();
+          showToast(`${player.name} guanya la partida!`, "success");
+          launchConfetti();
+          showEndGate(`${player.name} és el campió o campiona!`, "Jugar una altra partida");
+          return;
+        }
+
+        showToast(`Nivell ${player.level} superat!`, "success");
+        player.level++;
+        statusMessage.textContent = "Molt bé! Passem al següent rival.";
+        updateInterface();
+
+        window.setTimeout(() => {
+          if (!gameEnded) moveToNextPlayer();
+        }, 950);
+      }
+
+      function handleMistake(player) {
+        acceptingInput = false;
+        setPadsEnabled(false);
+        turnToken++;
+        player.alive = false;
+        statusMessage.textContent = `Oh! ${player.name} s'ha equivocat i queda eliminat.`;
+        hubDisplay.textContent = "XX";
+        playErrorSound();
+        showToast(`${player.name} queda eliminat.`, "error");
+        updateInterface();
+
+        const alive = players.filter(item => item.alive && !item.completed);
+
+        if (players.length === 1 || alive.length === 0) {
+          gameEnded = true;
+          const best = [...players].sort((a, b) => b.level - a.level || b.correctPads - a.correctPads)[0];
+          showEndGate(`Final de la partida. Millor resultat: ${best.name}, nivell ${best.level}.`, "Tornar-ho a provar");
+          return;
+        }
+
+        if (alive.length === 1 && players.length > 1) {
+          gameEnded = true;
+          const winner = alive[0];
+          statusMessage.textContent = `${winner.name} és l'últim rival en joc i guanya!`;
+          showToast(`${winner.name} guanya la partida!`, "success");
+          launchConfetti();
+          updateInterface();
+          showEndGate(`${winner.name} guanya per eliminació!`, "Jugar una altra partida");
+          return;
+        }
+
+        window.setTimeout(() => moveToNextPlayer(), 1100);
+      }
+
+      function moveToNextPlayer() {
+        if (gameEnded) return;
+        let attempts = 0;
+        do {
+          currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+          attempts++;
+        } while (attempts <= players.length && (!players[currentPlayerIndex].alive || players[currentPlayerIndex].completed));
+
+        if (attempts > players.length) return;
+        prepareCurrentTurn();
+      }
+
+      function showEndGate(message, buttonText) {
+        turnGate.style.display = "grid";
+        gateTitle.textContent = "Partida acabada";
+        gateSubtitle.textContent = message;
+        beginTurnBtn.textContent = buttonText;
+        beginTurnBtn.disabled = false;
+        beginTurnBtn.onclick = resetToSetup;
+      }
+
+      function updateInterface() {
+        const player = currentPlayer();
+        if (player) {
+          turnName.textContent = player.name;
+          levelText.textContent = `${Math.min(player.level, MAX_LEVEL)} / ${MAX_LEVEL}`;
+          levelBar.style.width = `${(Math.min(player.level, MAX_LEVEL) / MAX_LEVEL) * 100}%`;
+        }
+
+        const ranked = players
+          .map((item, originalIndex) => ({ item, originalIndex }))
+          .sort((a, b) => {
+            if (a.item.completed !== b.item.completed) return Number(b.item.completed) - Number(a.item.completed);
+            if (a.item.alive !== b.item.alive) return Number(b.item.alive) - Number(a.item.alive);
+            if (a.item.level !== b.item.level) return b.item.level - a.item.level;
+            return b.item.correctPads - a.item.correctPads;
+          });
+
+        scoreboard.innerHTML = ranked.map(({ item, originalIndex }) => {
+          const isActive = !gameEnded && originalIndex === currentPlayerIndex && item.alive;
+          const classes = ["player-card", isActive ? "active" : "", !item.alive ? "eliminated" : "", item.completed ? "winner" : ""].filter(Boolean).join(" ");
+          const state = item.completed ? "🏆" : !item.alive ? "Eliminat" : isActive ? "Torn" : "En joc";
+          return `
+            <div class="${classes}">
+              <span class="avatar">${escapeHtml(item.name.charAt(0).toUpperCase())}</span>
+              <span class="player-info"><strong>${escapeHtml(item.name)}</strong><small>Nivell ${Math.min(item.level, MAX_LEVEL)} · ${item.correctPads} encerts</small></span>
+              <span class="player-state">${state}</span>
+            </div>
+          `;
+        }).join("");
+      }
+
+      function setPadsEnabled(enabled) {
+        pads.forEach(pad => { pad.disabled = !enabled; });
+      }
+
+      function ensureAudioContext() {
+        if (!audioContext) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (AudioCtx) audioContext = new AudioCtx();
+        }
+        if (audioContext?.state === "suspended") audioContext.resume();
+      }
+
+      function playTone(index, duration = 0.25) {
+        if (muted) return;
+        ensureAudioContext();
+        if (!audioContext) return;
+
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        const now = audioContext.currentTime;
+        oscillator.type = "sine";
+        oscillator.frequency.setValueAtTime(PAD_FREQUENCIES[index], now);
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(0.27, now + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+        oscillator.connect(gain);
+        gain.connect(audioContext.destination);
+        oscillator.start(now);
+        oscillator.stop(now + duration + 0.03);
+      }
+
+      function playErrorSound() {
+        if (muted) return;
+        ensureAudioContext();
+        if (!audioContext) return;
+
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        const now = audioContext.currentTime;
+        oscillator.type = "sawtooth";
+        oscillator.frequency.setValueAtTime(180, now);
+        oscillator.frequency.exponentialRampToValueAtTime(65, now + 0.5);
+        gain.gain.setValueAtTime(0.22, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.55);
+        oscillator.connect(gain);
+        gain.connect(audioContext.destination);
+        oscillator.start(now);
+        oscillator.stop(now + 0.6);
+      }
+
+      function toggleMute() {
+        muted = !muted;
+        muteBtn.setAttribute("aria-pressed", String(muted));
+        muteBtn.textContent = muted ? "🔇 So desactivat" : "🔊 So activat";
+        if (!muted) playTone(1, 0.16);
+      }
+
+      function showToast(message, type = "info") {
+        window.clearTimeout(toastTimer);
+        toast.textContent = message;
+        toast.className = `toast ${type} show`;
+        toastTimer = window.setTimeout(() => toast.classList.remove("show"), 2100);
+      }
+
+      function launchConfetti() {
+        confetti.innerHTML = "";
+        for (let i = 0; i < 90; i++) {
+          const piece = document.createElement("span");
+          piece.className = "confetti-piece";
+          piece.style.left = `${Math.random() * 100}%`;
+          piece.style.background = CONFETTI_COLORS[i % CONFETTI_COLORS.length];
+          piece.style.animationDelay = `${Math.random() * 0.65}s`;
+          piece.style.animationDuration = `${2.1 + Math.random() * 1.6}s`;
+          piece.style.setProperty("--drift", `${-130 + Math.random() * 260}px`);
+          confetti.appendChild(piece);
+        }
+        window.setTimeout(() => { confetti.innerHTML = ""; }, 4400);
+      }
+
+      function resetToSetup() {
+        turnToken++;
+        acceptingInput = false;
+        playingSequence = false;
+        gameEnded = false;
+        setPadsEnabled(false);
+        pads.forEach(pad => pad.classList.remove("active"));
+        gameScreen.classList.remove("visible");
+        setupScreen.style.display = "block";
+        hubDisplay.textContent = "--";
+        beginTurnBtn.onclick = beginTurn;
+        turnGate.style.display = "grid";
+        showToast("Partida reiniciada. Podeu canviar els jugadors.", "info");
+        playersForm.querySelector("input")?.focus();
+      }
+
+      function sleep(ms) {
+        return new Promise(resolve => window.setTimeout(resolve, ms));
+      }
+
+      addPlayerBtn.addEventListener("click", () => addPlayerField());
+      playersForm.addEventListener("click", event => {
+        const button = event.target.closest(".remove-player");
+        if (!button) return;
+        button.closest(".player-row").remove();
+        renumberPlayerFields();
+      });
+      startGameBtn.addEventListener("click", startGame);
+      beginTurnBtn.onclick = beginTurn;
+      restartBtn.addEventListener("click", resetToSetup);
+      muteBtn.addEventListener("click", toggleMute);
+      pads.forEach((pad, index) => pad.addEventListener("click", () => handlePad(index)));
+
+      document.addEventListener("keydown", event => {
+        if (event.repeat || !acceptingInput) return;
+        const index = ["1", "2", "3", "4"].indexOf(event.key);
+        if (index >= 0) {
+          event.preventDefault();
+          handlePad(index);
+        }
+      });
+
+      addPlayerField("Jugador 1");
+    })();
+  </script>
+</body>
+</html>
